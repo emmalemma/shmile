@@ -35,6 +35,7 @@ image_twiddle = (img_src_list, opts, cb) ->
       i++
     convertArgs.push OUTPUT_PATH
     im.convert convertArgs, (err, stdout, stderr) ->
+      console.log 'converting', convertArgs
       throw err  if err
       emitter.emit "laid_out", OUTPUT_PATH
       doCompositing()

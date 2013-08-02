@@ -13,6 +13,8 @@ web = http.createServer(exp)
 
 exec = require("child_process").exec
 
+cp_path = "/Users/adrian/Dropbox/wedding\\ slideshow"
+
 exp.configure ->
   exp.set "views", __dirname + "/views"
   exp.set "view engine", "jade"
@@ -34,6 +36,7 @@ exp.get "/gallery", (req, res) ->
     extra_css: [ "photoswipe/photoswipe" ]
     image_paths: photo_file_utils.composited_images(true)
 
+
 State = image_src_list: []
 io = require("socket.io").listen(web)
 web.listen 3000
@@ -41,13 +44,21 @@ io.sockets.on "connection", (websocket) ->
   sys.puts "Web browser connected"
   camera = camera_control()
   camera.on "camera_begin_snap", ->
+    State.image_urls = []
     websocket.emit "camera_begin_snap"
 
   camera.on "camera_snapped", ->
     websocket.emit "camera_snapped"
 
+  camera.on "complete", ->
+    websocket.emit "complete", urls: State.image_urls
+
   camera.on "photo_saved", (filename, path, web_url) ->
     State.image_src_list.push path
+    State.image_urls.push web_url
+    console.log ">","cp #{path} #{cp_path}/#{filename}"
+    exec "cp #{path} #{cp_path}/#{filename}", (data)->
+      console.log 'copied',data
     websocket.emit "photo_saved",
       filename: filename
       path: path

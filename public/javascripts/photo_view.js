@@ -5,7 +5,7 @@ function PhotoView() {
     this.images = this.canvas.set(); // List of SVG images
     this.all = this.canvas.set();
     this.overlayImage = null;
-    
+
     this.photoBorder = 0;
     this.compositeDim = null;
     this.frameDim = null;
@@ -35,11 +35,11 @@ PhotoView.prototype.render = function() {
         y: this.compositeOrigin.y + (this.compositeDim.h/2)
     }
     var r = this.canvas.rect(this.compositeOrigin.x, this.compositeOrigin.y, this.compositeDim.w, this.compositeDim.h);
-    
+
     r.attr({'fill': 'white'});
-    
+
     this.all.push(r);
-    
+
     // Scale the photo padding too
     this.photoBorder = this.compositeDim.w / 50;
 
@@ -58,7 +58,7 @@ PhotoView.prototype.render = function() {
     this.frames.push(frame);
     this.all.push(img);
     this.all.push(frame);
-    
+
     frame = frame.clone();
     img = img.clone();
     frame.translate(this.frameDim.w + this.photoBorder, 0);
@@ -67,7 +67,7 @@ PhotoView.prototype.render = function() {
     this.images.push(img);
     this.all.push(frame);
     this.all.push(img);
-    
+
     frame = frame.clone();
     img = img.clone();
     frame.translate(-(this.frameDim.w + this.photoBorder), this.frameDim.h + this.photoBorder);
@@ -76,7 +76,7 @@ PhotoView.prototype.render = function() {
     this.images.push(img);
     this.all.push(frame);
     this.all.push(img);
-    
+
     frame = frame.clone();
     img = img.clone();
     frame.translate(this.frameDim.w + this.photoBorder, 0);
@@ -85,7 +85,7 @@ PhotoView.prototype.render = function() {
     this.images.push(img);
     this.all.push(frame);
     this.all.push(img);
-    
+
     // Draw the PNG logo overlay.
     var o = this.canvas.image(
         '/images/overlay.png',
@@ -95,7 +95,7 @@ PhotoView.prototype.render = function() {
         this.compositeDim.h);
     this.all.push(o);
     this.overlayImage = o;
-    
+
     // Hide everything and move out of sight.
     this.all.hide();
     this.all.translate(-Shmile.WINDOW_WIDTH, 0);
@@ -127,6 +127,23 @@ PhotoView.prototype.updatePhotoSet = function(img_src, idx, cb) {
 
 }
 
+PhotoView.prototype.setPhotoset = function(urls) {
+  var view = this;
+  for (var idx=0;idx<4;idx++) {
+    var imgEl = view.images[idx];
+    var frameEl = view.frames[idx];
+
+    imgEl.attr({'src': urls[idx], 'opacity': 0});
+    imgEl.animate({'opacity': 1}, 1500);
+    imgEl.show();
+  }
+}
+
+PhotoView.prototype.preloadPhoto = function(url) {
+  var img = new Image();
+  img.src = url;
+}
+
 /**
  * For in: assume the view has been rendered and reset to initial state and moved out of sight.
  * Slide in the composite image.
@@ -139,7 +156,7 @@ PhotoView.prototype.animate = function(dir, cb) {
         this.overlayImage.hide();
         this.all.animate({
             'translation': Shmile.WINDOW_WIDTH+",0"
-            }, 1000, "<>", cb);        
+            }, 1000, "<>", cb);
     } else if (dir === 'out') {
         this.all.animate({
             'translation': Shmile.WINDOW_WIDTH+",0"
@@ -174,18 +191,18 @@ PhotoView.prototype.zoomFrame = function(idx, dir, onfinish) {
     var centerY = frameY + frameH/2;
 
     var animSpeed = 700;
-    
+
     // delta to translate to.
     var dx = this.compositeCenter.x - centerX;
     var dy = this.compositeCenter.y - centerY;
     var scaleFactor = this.compositeDim.w / this.frameDim.w;
-        
+
     if (dir === "out" && State.zoomed) {
         scaleFactor = 1;
         dx = -State.zoomed.dx;
         dy = -State.zoomed.dy;
         view.all.animate({
-            'scale': [1, 1, view.compositeCenter.x, view.compositeCenter.y].join(','),        
+            'scale': [1, 1, view.compositeCenter.x, view.compositeCenter.y].join(','),
         }, animSpeed, 'bounce', function() {
             view.all.animate({
                 'translation': dx+','+dy
@@ -215,7 +232,6 @@ PhotoView.prototype.zoomFrame = function(idx, dir, onfinish) {
  */
 PhotoView.prototype.slideInNext = function() {
     this.resetState();
-    this.modalMessage('Next!');
     this.all.hide();
     this.all.translate(-Shmile.WINDOW_WIDTH * 2, 0);
     this.animate('in', function() {
@@ -240,11 +256,15 @@ PhotoView.prototype.resetState = function () {
  */
 PhotoView.prototype.flashEffect = function(duration) {
     if (duration === undefined) { duration = 200; }
+    inDur = 200;
+    outDur = 1000;
     var rect = this.canvas.rect(0, 0, Shmile.WINDOW_WIDTH, Shmile.WINDOW_HEIGHT);
     rect.attr({'fill': 'white', 'opacity': 0});
-    rect.animate({'opacity': 1}, duration, ">", function() {
-        rect.animate({'opacity': 0}, duration, "<");
+    rect.animate({'opacity': 1}, inDur, ">", function() {
+      setTimeout(function () {
+        rect.animate({'opacity': 0}, outDur, "<");
         rect.remove();
+      }, 10);
     })
 
 }
@@ -280,7 +300,7 @@ PhotoView.prototype.modalMessage = function(text, persistTime, animateSpeed, cb)
         'scale': '1.5,1.5',
         'font-size': '70'
     }, animateSpeed, '>');
-    
+
     // Timer to delete self nodes.
     var t = setTimeout(function(all) {
         // Delete nodes

@@ -6,7 +6,8 @@
 body {
     background-color: #333;
     text-align: center;
-    background: url(/images/bg_linen.png)
+    background: url(/images/bg_linen.png);
+    cursor: none;
 }
 
 #viewport {
@@ -25,14 +26,14 @@ button.awesome {
     position: absolute;
 }
 button#start-button {
-    cursor: hand;
+    cursor: none;
 }
 
 .awesome, .awesome:visited {
-    background: #222 url(/images/alert-overlay.png) repeat-x; 
-    display: inline-block; 
-    padding: 5px 10px 6px; 
-    color: #fff; 
+    background: #222 url(/images/alert-overlay.png) repeat-x;
+    display: inline-block;
+    padding: 5px 10px 6px;
+    color: #fff;
     text-decoration: none;
     border-radius: 0.2em;
     box-shadow:0 1px 3px rgba(0,0,0,0.8);
